@@ -43,11 +43,28 @@ function looRippMenyy($sqllause, $valikunimi){
 //lisab andmetabeli uus kaubagrupp
 function lisaGrupp($grupinimi){
     global $yhendus;
-    if (!empty($grupinimi)) {
-        $kask = $yhendus->prepare("INSERT INTO kaubagrupid (grupinimi)  VALUES (?)");
-        $kask->bind_param("s", $grupinimi);
-        $kask->execute();
+
+    if (empty($grupinimi)) {
+        echo '<script>alert("Sisesta grupp!")</script>';
+        return;
     }
+
+    // Check if the group name already exists
+    $existingGroup = $yhendus->prepare("SELECT grupinimi FROM kaubagrupid WHERE grupinimi = ?");
+    $existingGroup->bind_param("s", $grupinimi);
+    $existingGroup->execute();
+    $existingGroup->store_result();
+
+    // If the group name already exists, display an alert and return
+    if ($existingGroup->num_rows > 0) {
+        echo '<script>alert("Selline grupp on juba olemas!")</script>';
+        return;
+    }
+
+    // If the group name does not exist, insert it into the database
+    $insertCommand = $yhendus->prepare("INSERT INTO kaubagrupid (grupinimi) VALUES (?)");
+    $insertCommand->bind_param("s", $grupinimi);
+    $insertCommand->execute();
 }
 
 // lisab uue kauba, kontrollides, kas materjal eksisteerib juba teistes gruppides
